@@ -1,2 +1,5 @@
 ---
-# vars file for sonarqube-setup
+#{{sonarqube_docker_image}}:{{sonarqube_docker_image_tag}}
+sonarqube_docker_image: sonarqube
+sonarqube_docker_image_tag: latest
+db_host: postgres.sysmango.net

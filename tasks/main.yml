@@ -1,0 +1,74 @@
+---
+- name: Create sonarqube volume root directory
+  become: "yes"
+  file:
+    path: /srv/nfs/sonarqube
+    state: directory
+    mode: 0777
+  any_errors_fatal: true
+
+- name: Create sonarqube volume conf directory
+  become: "yes"
+  file:
+    path: /srv/nfs/sonarqube/conf
+    state: directory
+    mode: 0777
+  any_errors_fatal: true
+
+- name: Create sonarqube volume data directory
+  become: "yes"
+  file:
+    path: /srv/nfs/sonarqube/data
+    state: directory
+    mode: 0777
+  any_errors_fatal: true
+
+- name: Create sonarqube volume logs directory
+  become: "yes"
+  file:
+    path: /srv/nfs/sonarqube/logs
+    state: directory
+    mode: 0777
+  any_errors_fatal: true
+
+- name: Create sonarqube volume extensions directory
+  become: "yes"
+  file:
+    path: /srv/nfs/sonarqube/extensions
+    state: directory
+    mode: 0777
+  any_errors_fatal: true
+
+- name: Set fact to carry database administrator
+  connection: local
+  set_fact:
+    postgres_password: "{{lookup('hashivault', 'service/database/postgres', 'password')}}"
+
+- name: Set fact to carry sonarqube user
+  connection: local
+  set_fact:
+    sonar_db_user: "{{lookup('hashivault', 'service/sonarqube', 'sonar_db_user')}}"
+
+- name: Set fact to carry sonarqube secret
+  connection: local
+  set_fact:
+    sonar_db_password: "{{lookup('hashivault', 'service/sonarqube', 'sonar_db_password')}}"
+
+- name: Create sonarqube db user
+  connection: local
+  postgresql_user:
+    login_host: postgres
+    login_password: '{{postgres_password}}'
+    user: '{{sonar_db_user}}'
+    password: '{{sonar_db_password}}'
+    encrypted: "yes"
+    state: present
+
+- name: Setup sonarqube database on db server
+  connection: local
+  postgresql_db:
+    login_host: postgres
+    login_password: '{{postgres_password}}'
+    name: '{{sonar_db_user}}'
+    owner: '{{sonar_db_user}}'
+    state: present
